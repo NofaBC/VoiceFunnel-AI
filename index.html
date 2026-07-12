@@ -4,17 +4,80 @@
   <meta charset="UTF-8" />
   <title>VoiceFunnel AI™ – Turn Your Website into 1,000 Warm Voicemails</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta
-    name="description"
-    content="VoiceFunnel AI™ turns any business website into AI-written, AI-voiced voicemail campaigns that drive warm callbacks and booked appointments."
-  />
+  <meta name="description" content="VoiceFunnel AI™ turns any business website into AI-written, AI-voiced voicemail campaigns that drive warm callbacks and booked appointments." />
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Custom smooth transitions & toast */
+    .toast {
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      transform: translateY(1.5rem) scale(0.96);
+      opacity: 0;
+    }
+    .toast.show {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+    }
+    .script-preview {
+      transition: all 0.3s ease;
+    }
+    .campaign-card {
+      transition: all 0.3s ease;
+    }
+    .campaign-card:hover {
+      border-color: rgba(16, 185, 129, 0.5);
+    }
+    input:focus, button:focus {
+      outline: 2px solid rgba(16, 185, 129, 0.5);
+      outline-offset: 2px;
+    }
+    /* Spinner */
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
 </head>
 <body class="bg-slate-950 text-slate-50">
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-4 pointer-events-none">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl px-5 py-3 shadow-2xl shadow-black/60 toast pointer-events-auto">
+      <p id="toastMessage" class="text-sm text-slate-100"></p>
+    </div>
+  </div>
+
+  <!-- Sign In Modal -->
+  <div id="signinModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-3xl max-w-sm w-full p-6 shadow-2xl shadow-black/60">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-semibold text-slate-50">Sign in to VoiceFunnel AI</h3>
+        <button id="closeSignin" class="text-slate-400 hover:text-slate-200 text-xl">&times;</button>
+      </div>
+      <form id="signinForm" class="space-y-4">
+        <div>
+          <label class="block text-sm text-slate-300 mb-1">Email</label>
+          <input type="email" id="signinEmail" class="w-full rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/70" placeholder="you@business.com" required />
+        </div>
+        <div>
+          <label class="block text-sm text-slate-300 mb-1">Password</label>
+          <input type="password" id="signinPassword" class="w-full rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/70" placeholder="••••••••" required />
+        </div>
+        <button type="submit" class="w-full rounded-xl bg-emerald-500 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-400 transition">Sign In</button>
+        <p class="text-xs text-slate-400 text-center">Demo: any email/password works</p>
+      </form>
+    </div>
+  </div>
+
   <!-- Page Wrapper -->
   <div class="min-h-screen flex flex-col">
     <!-- Nav -->
-    <header class="border-b border-slate-800/60 bg-slate-950/80 backdrop-blur">
+    <header class="border-b border-slate-800/60 bg-slate-950/80 backdrop-blur sticky top-0 z-40">
       <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
         <div class="flex items-center gap-2">
           <div class="h-9 w-9 rounded-xl bg-emerald-500/10 border border-emerald-400/40 flex items-center justify-center">
@@ -33,20 +96,17 @@
         </nav>
 
         <div class="flex items-center gap-3 text-sm">
-          <button class="hidden sm:inline-flex px-4 py-1.5 rounded-full border border-slate-700 hover:border-slate-500 text-slate-200 hover:text-white transition">
+          <button id="signinBtn" class="hidden sm:inline-flex px-4 py-1.5 rounded-full border border-slate-700 hover:border-slate-500 text-slate-200 hover:text-white transition">
             Sign in
           </button>
-          <a
-            href="#cta"
-            class="inline-flex px-4 py-1.5 rounded-full bg-emerald-500 text-slate-950 font-medium hover:bg-emerald-400 transition"
-          >
+          <a href="#cta" class="inline-flex px-4 py-1.5 rounded-full bg-emerald-500 text-slate-950 font-medium hover:bg-emerald-400 transition">
             Get Early Access
           </a>
         </div>
       </div>
     </header>
 
-    <!-- Hero -->
+    <!-- Main Content -->
     <main class="flex-1">
       <section class="relative overflow-hidden">
         <!-- Gradient background -->
@@ -78,14 +138,12 @@
                 </label>
                 <div class="flex flex-col sm:flex-row gap-3">
                   <input
-                    id="website"
+                    id="websiteInput"
                     type="url"
                     placeholder="https://yourbusiness.com"
                     class="flex-1 rounded-xl bg-slate-950/70 border border-slate-700 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/70 focus:border-emerald-400"
                   />
-                  <button
-                    class="shrink-0 inline-flex items-center justify-center rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-400 transition"
-                  >
+                  <button id="generateBtn" class="shrink-0 inline-flex items-center justify-center rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-400 transition">
                     Generate Voicemail Script
                   </button>
                 </div>
@@ -96,15 +154,10 @@
 
               <!-- Hero CTAs -->
               <div class="flex flex-wrap items-center gap-3 mb-4">
-                <a
-                  href="#cta"
-                  class="inline-flex items-center justify-center rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-400 transition"
-                >
+                <a href="#cta" class="inline-flex items-center justify-center rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-400 transition">
                   Join the Early Access List
                 </a>
-                <button
-                  class="inline-flex items-center justify-center rounded-xl border border-slate-700 bg-slate-900/60 px-4 py-2 text-sm font-medium text-slate-100 hover:border-slate-500 hover:bg-slate-900 transition"
-                >
+                <button id="watchDemoBtn" class="inline-flex items-center justify-center rounded-xl border border-slate-700 bg-slate-900/60 px-4 py-2 text-sm font-medium text-slate-100 hover:border-slate-500 hover:bg-slate-900 transition">
                   Watch Demo
                 </button>
                 <span class="text-xs text-slate-400">
@@ -118,47 +171,57 @@
               <div class="relative">
                 <div class="absolute -inset-6 rounded-3xl bg-gradient-to-tr from-emerald-500/20 via-sky-500/10 to-violet-500/10 blur-3xl opacity-60"></div>
 
-                <div class="relative bg-slate-900/80 border border-slate-700/80 rounded-3xl p-4 sm:p-6 shadow-xl shadow-black/40">
-                  <!-- Simulated app card -->
+                <div class="relative bg-slate-900/80 border border-slate-700/80 rounded-3xl p-4 sm:p-6 shadow-xl shadow-black/40 campaign-card">
+                  <!-- Campaign header -->
                   <div class="flex items-center justify-between mb-4">
                     <div>
                       <p class="text-xs text-slate-400 mb-0.5">Current Campaign</p>
-                      <p class="text-sm font-semibold text-slate-50">Local Acupuncture – Pain Relief Offer</p>
+                      <p id="campaignName" class="text-sm font-semibold text-slate-50">Local Acupuncture – Pain Relief Offer</p>
                     </div>
-                    <span class="inline-flex items-center rounded-full bg-emerald-500/10 px-3 py-1 text-[11px] text-emerald-300 border border-emerald-500/40">
-                      Running · 728 drops queued
+                    <span id="campaignStatus" class="inline-flex items-center rounded-full bg-emerald-500/10 px-3 py-1 text-[11px] text-emerald-300 border border-emerald-500/40">
+                      Running · <span id="dropsQueued">728</span> drops queued
                     </span>
                   </div>
 
                   <div class="grid gap-4">
-                    <!-- Script preview -->
-                    <div class="bg-slate-950/60 border border-slate-800 rounded-2xl p-3">
+                    <!-- Script preview (updatable) -->
+                    <div class="bg-slate-950/60 border border-slate-800 rounded-2xl p-3 script-preview">
                       <p class="text-[10px] font-medium text-slate-400 mb-1 uppercase tracking-[0.14em]">
                         AI VOICEMAIL SCRIPT (EDITABLE)
                       </p>
-                      <p class="text-xs text-slate-100 leading-relaxed">
+                      <p id="scriptText" class="text-xs text-slate-100 leading-relaxed">
                         “Hey Sarah, this is Dr. Behroozi over at Avicenna Acupuncture in Potomac. We’ve been helping patients
                         reduce pain and stress without adding more medication…
                       </p>
                       <p class="mt-2 text-[11px] text-emerald-300">
-                        Offer: <span class="font-medium">Complimentary consultation this week to see if acupuncture is right for you.</span>
+                        Offer: <span id="offerLine" class="font-medium">Complimentary consultation this week to see if acupuncture is right for you.</span>
                       </p>
+                      <div class="mt-2 flex gap-2">
+                        <button id="editScriptBtn" class="text-[10px] text-slate-400 hover:text-slate-200 underline">Edit script</button>
+                        <button id="copyScriptBtn" class="text-[10px] text-slate-400 hover:text-slate-200 underline">Copy</button>
+                      </div>
                     </div>
 
                     <!-- Metrics -->
                     <div class="grid grid-cols-3 gap-3 text-center">
                       <div class="bg-slate-950/60 border border-slate-800 rounded-2xl p-3">
                         <p class="text-[10px] text-slate-400 mb-1 uppercase tracking-[0.14em]">Drops sent</p>
-                        <p class="text-lg font-semibold text-slate-50">1,024</p>
+                        <p id="dropsSent" class="text-lg font-semibold text-slate-50">1,024</p>
                       </div>
                       <div class="bg-slate-950/60 border border-slate-800 rounded-2xl p-3">
                         <p class="text-[10px] text-slate-400 mb-1 uppercase tracking-[0.14em]">Callbacks</p>
-                        <p class="text-lg font-semibold text-emerald-400">87</p>
+                        <p id="callbacks" class="text-lg font-semibold text-emerald-400">87</p>
                       </div>
                       <div class="bg-slate-950/60 border border-slate-800 rounded-2xl p-3">
                         <p class="text-[10px] text-slate-400 mb-1 uppercase tracking-[0.14em]">Qualified</p>
-                        <p class="text-lg font-semibold text-sky-400">63</p>
+                        <p id="qualified" class="text-lg font-semibold text-sky-400">63</p>
                       </div>
+                    </div>
+
+                    <!-- Action buttons -->
+                    <div class="flex flex-wrap gap-2">
+                      <button id="sendCampaignBtn" class="flex-1 rounded-xl bg-emerald-500 px-3 py-1.5 text-xs font-semibold text-slate-950 hover:bg-emerald-400 transition">Send Campaign</button>
+                      <button id="resetCampaignBtn" class="flex-1 rounded-xl border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:border-slate-500 transition">Reset Demo</button>
                     </div>
 
                     <p class="text-[11px] text-slate-400">
@@ -262,7 +325,7 @@
         </div>
       </section>
 
-      <!-- Simple CTA anchor for nav (optional stub) -->
+      <!-- CTA Section -->
       <section id="cta" class="border-t border-slate-800 bg-slate-950">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
           <h2 class="text-xl sm:text-2xl font-semibold text-slate-50 mb-3">
@@ -273,14 +336,8 @@
             Share your email and we’ll notify you as soon as VoiceFunnel AI™ is ready for your next campaign.
           </p>
           <div class="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
-            <input
-              type="email"
-              placeholder="you@business.com"
-              class="flex-1 rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/70 focus:border-emerald-400"
-            />
-            <button
-              class="inline-flex items-center justify-center rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-400 transition"
-            >
+            <input id="earlyAccessEmail" type="email" placeholder="you@business.com" class="flex-1 rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/70 focus:border-emerald-400" />
+            <button id="earlyAccessBtn" class="inline-flex items-center justify-center rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-400 transition">
               Join Early Access
             </button>
           </div>
@@ -300,9 +357,308 @@
     </footer>
   </div>
 
+  <!-- ====== JAVASCRIPT ====== -->
   <script>
-    // Set current year in footer
-    document.getElementById('year').textContent = new Date().getFullYear();
+    (function() {
+      "use strict";
+
+      // --- DOM refs ---
+      const websiteInput = document.getElementById('websiteInput');
+      const generateBtn = document.getElementById('generateBtn');
+      const campaignName = document.getElementById('campaignName');
+      const dropsQueued = document.getElementById('dropsQueued');
+      const scriptText = document.getElementById('scriptText');
+      const offerLine = document.getElementById('offerLine');
+      const dropsSent = document.getElementById('dropsSent');
+      const callbacks = document.getElementById('callbacks');
+      const qualified = document.getElementById('qualified');
+      const campaignStatus = document.getElementById('campaignStatus');
+      const sendCampaignBtn = document.getElementById('sendCampaignBtn');
+      const resetCampaignBtn = document.getElementById('resetCampaignBtn');
+      const editScriptBtn = document.getElementById('editScriptBtn');
+      const copyScriptBtn = document.getElementById('copyScriptBtn');
+      const watchDemoBtn = document.getElementById('watchDemoBtn');
+      const signinBtn = document.getElementById('signinBtn');
+      const signinModal = document.getElementById('signinModal');
+      const closeSignin = document.getElementById('closeSignin');
+      const signinForm = document.getElementById('signinForm');
+      const earlyAccessBtn = document.getElementById('earlyAccessBtn');
+      const earlyAccessEmail = document.getElementById('earlyAccessEmail');
+      const toast = document.getElementById('toast');
+      const toastMessage = document.getElementById('toastMessage');
+
+      // --- State ---
+      let campaignActive = false;
+      let currentScript = '';
+      let currentOffer = '';
+      let currentBusiness = '';
+
+      // --- Toast helper ---
+      function showToast(msg, duration = 3000) {
+        toastMessage.textContent = msg;
+        toast.classList.add('show');
+        clearTimeout(toast._hideTimer);
+        toast._hideTimer = setTimeout(() => {
+          toast.classList.remove('show');
+        }, duration);
+      }
+
+      // --- Mock script generator ---
+      function generateScriptFromUrl(url) {
+        if (!url || !url.startsWith('http')) {
+          return { script: null, business: null, offer: null };
+        }
+        try {
+          const parsed = new URL(url);
+          const host = parsed.hostname.replace(/^www\./, '');
+          const domain = host.split('.')[0];
+          const businessName = domain.charAt(0).toUpperCase() + domain.slice(1);
+          const offers = [
+            'Complimentary consultation this week to see if our service is right for you.',
+            'Free initial assessment with no obligation—book a 15‑minute call.',
+            'Special introductory offer: 20% off your first purchase when you mention this voicemail.',
+            'Limited‑time bonus: receive a free guide with our top tips for success.',
+            'Schedule a free discovery session to learn how we can help you reach your goals.'
+          ];
+          const offer = offers[Math.floor(Math.random() * offers.length)];
+          const script = `“Hey there, this is the team at ${businessName}. We noticed you might be interested in our services, and we wanted to reach out personally. We’ve been helping businesses like yours streamline their outreach and boost response rates. If you’re open to it, we’d love to share how we can do the same for you. Give us a call back when you get a moment—we’d be happy to chat. Thanks, and have a great day!”`;
+          return { script, business: businessName, offer };
+        } catch {
+          return { script: null, business: null, offer: null };
+        }
+      }
+
+      // --- Update campaign UI ---
+      function updateCampaign(script, business, offer) {
+        if (!script) {
+          // Reset to default
+          campaignName.textContent = 'Local Acupuncture – Pain Relief Offer';
+          scriptText.textContent = '“Hey Sarah, this is Dr. Behroozi over at Avicenna Acupuncture in Potomac. We’ve been helping patients reduce pain and stress without adding more medication…';
+          offerLine.textContent = 'Complimentary consultation this week to see if acupuncture is right for you.';
+          dropsQueued.textContent = '728';
+          dropsSent.textContent = '1,024';
+          callbacks.textContent = '87';
+          qualified.textContent = '63';
+          campaignStatus.innerHTML = `Running · <span id="dropsQueued">728</span> drops queued`;
+          campaignActive = false;
+          showToast('Campaign reset to demo data.', 2000);
+          return;
+        }
+
+        currentScript = script;
+        currentOffer = offer;
+        currentBusiness = business;
+
+        campaignName.textContent = `${business} – Voicemail Campaign`;
+        scriptText.textContent = script;
+        offerLine.textContent = offer;
+
+        // Simulate fresh campaign metrics
+        const drops = Math.floor(Math.random() * 500) + 300;
+        const sent = Math.floor(Math.random() * 1500) + 500;
+        const cb = Math.floor(Math.random() * 120) + 20;
+        const q = Math.floor(Math.random() * 80) + 10;
+
+        dropsQueued.textContent = drops;
+        dropsSent.textContent = sent.toLocaleString();
+        callbacks.textContent = cb;
+        qualified.textContent = q;
+        campaignStatus.innerHTML = `Running · <span id="dropsQueued">${drops}</span> drops queued`;
+        campaignActive = true;
+        showToast(`✨ Script generated for ${business}!`, 3000);
+      }
+
+      // --- Handle Generate ---
+      function handleGenerate() {
+        const url = websiteInput.value.trim();
+        if (!url) {
+          showToast('Please paste a website URL first.', 3000);
+          return;
+        }
+        // Show loading state
+        generateBtn.disabled = true;
+        generateBtn.innerHTML = '<span class="spinner"></span> Generating...';
+
+        // Simulate network delay
+        setTimeout(() => {
+          const result = generateScriptFromUrl(url);
+          generateBtn.disabled = false;
+          generateBtn.innerHTML = 'Generate Voicemail Script';
+
+          if (!result.script) {
+            showToast('Invalid URL. Please enter a valid website (e.g., https://example.com).', 3500);
+            return;
+          }
+          updateCampaign(result.script, result.business, result.offer);
+        }, 1200);
+      }
+
+      // --- Reset to default demo ---
+      function resetCampaign() {
+        updateCampaign(null);
+        websiteInput.value = '';
+      }
+
+      // --- Send Campaign (simulate) ---
+      function sendCampaign() {
+        if (!campaignActive) {
+          showToast('Please generate a script first before sending.', 2500);
+          return;
+        }
+        showToast('🚀 Campaign sent! Your voicemails are being delivered.', 3000);
+        // Increment metrics a bit
+        const sent = parseInt(dropsSent.textContent.replace(/,/g, '')) + Math.floor(Math.random() * 200) + 50;
+        dropsSent.textContent = sent.toLocaleString();
+        const cb = parseInt(callbacks.textContent) + Math.floor(Math.random() * 10) + 2;
+        callbacks.textContent = cb;
+        const q = parseInt(qualified.textContent) + Math.floor(Math.random() * 8) + 1;
+        qualified.textContent = q;
+        // reduce queued
+        let queued = parseInt(dropsQueued.textContent);
+        queued = Math.max(0, queued - Math.floor(Math.random() * 50) - 10);
+        dropsQueued.textContent = queued;
+        campaignStatus.innerHTML = `Running · <span id="dropsQueued">${queued}</span> drops queued`;
+        if (queued === 0) {
+          campaignStatus.innerHTML = `Completed · <span class="text-emerald-300">All drops sent</span>`;
+        }
+      }
+
+      // --- Edit script ---
+      function editScript() {
+        if (!campaignActive) {
+          showToast('Generate a script first to edit it.', 2500);
+          return;
+        }
+        const newScript = prompt('Edit your voicemail script:', currentScript);
+        if (newScript !== null && newScript.trim() !== '') {
+          currentScript = newScript.trim();
+          scriptText.textContent = currentScript;
+          showToast('Script updated!', 2000);
+        }
+        const newOffer = prompt('Edit your offer line:', currentOffer);
+        if (newOffer !== null && newOffer.trim() !== '') {
+          currentOffer = newOffer.trim();
+          offerLine.textContent = currentOffer;
+          showToast('Offer updated!', 2000);
+        }
+      }
+
+      // --- Copy script ---
+      function copyScript() {
+        if (!campaignActive) {
+          showToast('Generate a script first to copy.', 2500);
+          return;
+        }
+        const fullText = currentScript + '\n\nOffer: ' + currentOffer;
+        navigator.clipboard.writeText(fullText).then(() => {
+          showToast('📋 Script copied to clipboard!', 2000);
+        }).catch(() => {
+          // Fallback
+          const textarea = document.createElement('textarea');
+          textarea.value = fullText;
+          document.body.appendChild(textarea);
+          textarea.select();
+          document.execCommand('copy');
+          document.body.removeChild(textarea);
+          showToast('📋 Script copied to clipboard!', 2000);
+        });
+      }
+
+      // --- Watch Demo ---
+      function watchDemo() {
+        showToast('🎬 Demo video will play here (simulated).', 2500);
+      }
+
+      // --- Sign In ---
+      function openSignin() {
+        signinModal.classList.remove('hidden');
+        signinModal.style.display = 'flex';
+      }
+
+      function closeSigninModal() {
+        signinModal.style.display = 'none';
+        signinModal.classList.add('hidden');
+      }
+
+      signinForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const email = document.getElementById('signinEmail').value.trim();
+        if (email) {
+          showToast(`✅ Signed in as ${email} (demo)`, 3000);
+          closeSigninModal();
+          // Store in localStorage as demo
+          localStorage.setItem('voicefunnel_user', JSON.stringify({ email }));
+        } else {
+          showToast('Please enter an email.', 2000);
+        }
+      });
+
+      // --- Early Access ---
+      function handleEarlyAccess() {
+        const email = earlyAccessEmail.value.trim();
+        if (!email || !email.includes('@')) {
+          showToast('Please enter a valid email address.', 2500);
+          return;
+        }
+        // Save to localStorage
+        const subscribers = JSON.parse(localStorage.getItem('voicefunnel_subscribers') || '[]');
+        if (!subscribers.includes(email)) {
+          subscribers.push(email);
+          localStorage.setItem('voicefunnel_subscribers', JSON.stringify(subscribers));
+        }
+        showToast(`🎉 You're on the early access list! (${email})`, 3500);
+        earlyAccessEmail.value = '';
+      }
+
+      // --- Event listeners ---
+      generateBtn.addEventListener('click', handleGenerate);
+      websiteInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleGenerate(); });
+
+      resetCampaignBtn.addEventListener('click', resetCampaign);
+      sendCampaignBtn.addEventListener('click', sendCampaign);
+      editScriptBtn.addEventListener('click', editScript);
+      copyScriptBtn.addEventListener('click', copyScript);
+      watchDemoBtn.addEventListener('click', watchDemo);
+
+      signinBtn.addEventListener('click', openSignin);
+      closeSignin.addEventListener('click', closeSigninModal);
+      signinModal.addEventListener('click', (e) => { if (e.target === signinModal) closeSigninModal(); });
+
+      earlyAccessBtn.addEventListener('click', handleEarlyAccess);
+      earlyAccessEmail.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleEarlyAccess(); });
+
+      // Smooth scroll for nav links
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+          e.preventDefault();
+          const targetId = this.getAttribute('href');
+          if (targetId === '#') return;
+          const target = document.querySelector(targetId);
+          if (target) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        });
+      });
+
+      // Set year
+      document.getElementById('year').textContent = new Date().getFullYear();
+
+      // Check if user already signed in (demo)
+      const savedUser = localStorage.getItem('voicefunnel_user');
+      if (savedUser) {
+        try {
+          const user = JSON.parse(savedUser);
+          if (user.email) {
+            showToast(`👋 Welcome back, ${user.email}`, 3000);
+          }
+        } catch {}
+      }
+
+      // Initial demo: pre-fill with a sample URL
+      websiteInput.value = 'https://avicennaacupuncture.com';
+
+      console.log('VoiceFunnel AI™ prototype loaded. Paste a website and generate!');
+    })();
   </script>
 </body>
 </html>
